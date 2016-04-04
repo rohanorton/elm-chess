@@ -147,3 +147,18 @@ showBoard board =
     List.map showRow board
       |> List.map fromList
       |> join "\n"
+
+
+initialBoardStr : String
+initialBoardStr =
+  join
+    "\n"
+    [ "rnbqkbnr"
+    , "pppppppp"
+    , "        "
+    , "        "
+    , "        "
+    , "        "
+    , "PPPPPPPP"
+    , "RNBQKBNR"
+    ]
