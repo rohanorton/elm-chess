@@ -1,6 +1,9 @@
 module Chess (..) where
 
-import String exposing (lines, join, toList, fromList)
+import String
+import Maybe.Extra
+import Dict
+import Char
 
 
 type alias Board =
@@ -69,73 +72,65 @@ showPiece piece =
       'p'
 
 
+typeList : Dict.Dict Char PType
+typeList =
+  Dict.fromList
+    [ ( 'p', Pawn )
+    , ( 'n', Knight )
+    , ( 'r', Rook )
+    , ( 'b', Bishop )
+    , ( 'k', King )
+    , ( 'q', Queen )
+    ]
+
+
 readPiece : Char -> Maybe Piece
 readPiece char =
-  case char of
-    'Q' ->
-      Just (Piece White Queen)
+  let
+    color =
+      if Char.isUpper char then
+        White
+      else
+        Black
 
-    'K' ->
-      Just (Piece White King)
+    pieceType =
+      Dict.get (Char.toLower char) typeList
 
-    'B' ->
-      Just (Piece White Bishop)
-
-    'R' ->
-      Just (Piece White Rook)
-
-    'N' ->
-      Just (Piece White Knight)
-
-    'P' ->
-      Just (Piece White Pawn)
-
-    'q' ->
-      Just (Piece Black Queen)
-
-    'k' ->
-      Just (Piece Black King)
-
-    'b' ->
-      Just (Piece Black Bishop)
-
-    'r' ->
-      Just (Piece Black Rook)
-
-    'n' ->
-      Just (Piece Black Knight)
-
-    'p' ->
-      Just (Piece Black Pawn)
-
-    _ ->
-      Nothing
+    makePiece =
+      Piece color
+  in
+    Maybe.map makePiece pieceType
 
 
 showSquare : Square -> Char
 showSquare square =
   case square of
     Nothing ->
-      ' '
+      '.'
 
     Just piece ->
       showPiece piece
 
 
-readSquare : Char -> Square
-readSquare =
-  readPiece
+readSquare : Char -> Maybe Square
+readSquare c =
+  case c of
+    '.' ->
+      Just Nothing
+
+    _ ->
+      Maybe.map Just (readPiece c)
 
 
-readBoard : String -> Board
+readBoard : String -> Maybe Board
 readBoard str =
   let
     readRow =
-      List.map readSquare
+      Maybe.Extra.traverse readSquare
   in
-    lines str
-      |> List.map toList
-      |> List.map readRow
+    String.lines str
+      |> List.map String.toList
+      |> Maybe.Extra.traverse readRow
 
 
 showBoard : Board -> String
@@ -145,20 +140,20 @@ showBoard board =
       List.map showSquare
   in
     List.map showRow board
-      |> List.map fromList
-      |> join "\n"
+      |> List.map String.fromList
+      |> String.join "\n"
 
 
 initialBoardStr : String
 initialBoardStr =
-  join
+  String.join
     "\n"
     [ "rnbqkbnr"
     , "pppppppp"
-    , "        "
-    , "        "
-    , "        "
-    , "        "
+    , "........"
+    , "........"
+    , "........"
+    , "........"
     , "PPPPPPPP"
     , "RNBQKBNR"
     ]
